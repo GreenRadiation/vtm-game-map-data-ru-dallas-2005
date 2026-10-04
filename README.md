@@ -41,6 +41,7 @@ python3 -m http.server 8000
 ## Документы
 
 - [docs/MAP.md](docs/MAP.md) — как устроена карта: сетки, координаты, формат данных, правила описаний.
+- [docs/NOTES.md](docs/NOTES.md) — заметки по хронике.
 - [docs/TASKS.md](docs/TASKS.md) — что делаем дальше: расширение для Owlbear Rodeo с кубами и листом персонажа V20.
 - [CLAUDE.md](CLAUDE.md) — контекст проекта для Claude Code.
 
