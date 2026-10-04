@@ -42,7 +42,7 @@ python3 -m http.server 8000
 
 - [docs/MAP.md](docs/MAP.md) — как устроена карта: сетки, координаты, формат данных, правила описаний.
 - [docs/NOTES.md](docs/NOTES.md) — заметки по хронике.
-- [docs/TASKS.md](docs/TASKS.md) — что делаем дальше: расширение для Owlbear Rodeo с кубами и листом персонажа V20.
+- [docs/TASKS.md](docs/TASKS.md) — что делаем дальше по карте. Расширение для Owlbear Rodeo с кубами и листом персонажа V20 живёт в [отдельном репозитории](https://github.com/GreenRadiation/owlbear-rodeo-extension-vtm-v20-dice-character-sheet-ru).
 - [CLAUDE.md](CLAUDE.md) — контекст проекта для Claude Code.
 
 ## Лицензия и оговорки
