@@ -28,11 +28,12 @@ var L = "ABCDEFGHI";
 var root = document.getElementById("root");
 var data = null, mine = {cells: {}};
 var cur = {b: "city", id: "D5"}, editing = false, status = "", toolStatus = "", confirmWipe = false;
+var moreOpen = {}; // какие раскрытые «Подробнее» помнить, пока страница открыта
 var boardEl, panel, scaleEl, toolsEl;
 
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (ch) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[ch]; }); }
 function key() { return cur.b + ":" + cur.id; }
-function cell(b, id) { return data.cells[b + ":" + id] || {name: "", terrain: "", marker: "", label: "", summary: "", details: "", notes: ""}; }
+function cell(b, id) { return data.cells[b + ":" + id] || {name: "", terrain: "", marker: "", label: "", summary: "", details: "", more: "", notes: ""}; }
 function own(b, id) { return mine.cells[b + ":" + id] || null; }
 
 // ---------- личное хранилище ----------
@@ -164,11 +165,14 @@ function renderPanel() {
     '<h2>' + esc(x.name || "Без названия") + '</h2>' +
     (x.summary ? '<p class="psum">' + esc(x.summary) + '</p>' : "") +
     '<div class="pdet">' + (paras(x.details) || '<p class="psum">Описания пока нет.</p>') + '</div>' +
+    (x.more && x.more.trim() ? '<details class="pmore" id="p-more"' + (moreOpen[k] ? ' open' : '') + '><summary>Подробнее о клетке</summary><div class="pdet">' + paras(x.more) + '</div></details>' : "") +
     (x.notes && x.notes.trim() ? '<div class="notes"><h3>Заметки мастера</h3><p>' + esc(x.notes) + '</p></div>' : "") +
     mineBlock +
     '<div class="actions"><button class="btn primary" type="button" id="p-edit">' + (own(cur.b, cur.id) ? 'Изменить мои пометки' : 'Добавить свою пометку') + '</button>' +
     (ZOOM[k] ? '<button class="btn" type="button" id="p-zoom">Открыть центр крупно</button>' : "") +
     (status ? '<span class="status">' + esc(status) + '</span>' : "") + '</div>';
+  var pm = document.getElementById("p-more");
+  if (pm) pm.addEventListener("toggle", function () { if (pm.open) moreOpen[k] = 1; else delete moreOpen[k]; });
   document.getElementById("p-edit").addEventListener("click", function () { editing = true; status = ""; renderPanel(); var t = document.getElementById("f-notes"); if (t) t.focus(); });
   var zb = document.getElementById("p-zoom");
   if (zb) zb.addEventListener("click", function () {
