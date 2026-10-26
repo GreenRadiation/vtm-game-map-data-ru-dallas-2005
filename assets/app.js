@@ -14,15 +14,19 @@ var STORE_KEY = "vtm-dallas-2005.personal.v1";
 var BOARDS = {
   city: {cols: 9, rows: 9, label: "Даллас", tab: "Даллас · 9×9", n: 33.02, s: 32.62, w: -96.99, e: -96.55, home: "D5",
     scale: "Одна клетка около 4,5 на 5 км. Ночью по шоссе это 3–5 минут на машине, по улицам 7–10. Клетки с пунктирной рамкой (D5, E5, D6, E6) показаны крупно на карте центра."},
-  core: {cols: 8, rows: 8, label: "Центр Далласа", tab: "Центр Далласа · 8×8", n: 32.842222, s: 32.753333, w: -96.843333, e: -96.745556, home: "B4",
+  core: {cols: 8, rows: 8, label: "Центр Далласа", tab: "Центр Далласа · 8×8", n: 32.842222, s: 32.753333, w: -96.843333, e: -96.745556, home: "B4", parent: "city", pcol: 3, prow: 5,
     scale: "Карта центра — это ровно четыре клетки большой карты, каждая разбита на 4×4: A–D 1–4 это D5, E–H 1–4 это E5, A–D 5–8 это D6, E–H 5–8 это E6. Толстые линии показывают их границы. Одна клетка около 1,1 на 1,2 км, 15 минут пешком или пара минут на машине."},
   fw: {cols: 9, rows: 9, label: "Форт-Уэрт", tab: "Форт-Уэрт · 9×9", n: 33.00, s: 32.60, w: -97.55, e: -97.11, home: "E6",
-    scale: "Тот же масштаб, что у карты Далласа: клетка около 4,5 на 5 км. Между двумя картами лежат Арлингтон и Гранд-Прери. От отеля Anatole до даунтауна Форт-Уэрта около 48 км, ночью 40–50 минут по I-30."}
+    scale: "Тот же масштаб, что у карты Далласа: клетка около 4,5 на 5 км. Между двумя картами лежат Арлингтон и Гранд-Прери. От отеля Anatole до даунтауна Форт-Уэрта около 48 км, ночью 40–50 минут по I-30."},
+  fwcore: {cols: 8, rows: 8, label: "Центр Форт-Уэрта", tab: "Центр Форт-Уэрта · 8×8", n: 32.822222, s: 32.733333, w: -97.403333, e: -97.305556, home: "F7", parent: "fw", pcol: 3, prow: 5,
+    scale: "Карта центра Форт-Уэрта — это ровно четыре клетки карты Форт-Уэрта, каждая разбита на 4×4: A–D 1–4 это D5, E–H 1–4 это E5, A–D 5–8 это D6, E–H 5–8 это E6. Толстые линии показывают их границы. Одна клетка около 1,1 на 1,2 км, 15 минут пешком или пара минут на машине."}
 };
 var ORIGIN = [32.8005, -96.8277]; // отель Anatole, от него считаются расстояния
 var MARKS = [["", "Без метки"], ["haven", "Убежище"], ["ally", "Союзники"], ["hostile", "Враждебность"], ["important", "Важное место"]];
 var MLABEL = {haven: "Убежище", ally: "Союзники", hostile: "Враждебность", important: "Важное место"};
-var ZOOM = {"city:D5": 1, "city:E5": 1, "city:D6": 1, "city:E6": 1};
+// Клетки больших карт, которые показаны крупно на детальной карте: ключ клетки → ключ детальной доски
+var ZOOM = {"city:D5": "core", "city:E5": "core", "city:D6": "core", "city:E6": "core",
+  "fw:D5": "fwcore", "fw:E5": "fwcore", "fw:D6": "fwcore", "fw:E6": "fwcore"};
 var L = "ABCDEFGHI";
 
 var root = document.getElementById("root");
@@ -95,7 +99,7 @@ function renderBoard() {
       var id = L[c2] + r, x = cell(cur.b, id), o = own(cur.b, id), k = cur.b + ":" + id;
       var m = (o && o.marker) || x.marker;
       var cls = "cell " + (x.terrain || "") + (m ? " m-" + m : "") + (ZOOM[k] ? " zoom" : "") +
-        (cur.b === "core" && c2 === 3 ? " qr" : "") + (cur.b === "core" && r === 4 ? " qb" : "");
+        (B.parent && c2 === 3 ? " qr" : "") + (B.parent && r === 4 ? " qb" : "");
       h += '<button type="button" class="' + cls + '" data-id="' + id + '" aria-pressed="' + (id === cur.id) + '" title="' + esc(id + " · " + x.name) + '" aria-label="' + esc(id + ", " + x.name) + '">' +
         '<span class="ci">' + id + '</span><span class="cn">' + esc(x.name) + '</span>' + (m ? '<span class="pin"></span>' : '') + (o ? '<span class="own"></span>' : '') + '</button>';
     }
@@ -121,7 +125,7 @@ function paras(t) {
 function renderPanel() {
   var x = cell(cur.b, cur.id), o = own(cur.b, cur.id) || {marker: "", label: "", notes: ""}, k = key();
   var where = BOARDS[cur.b].label + ' · ' + cur.id +
-    (cur.b === "core" ? ' (в большой ' + "DE"[Math.floor(L.indexOf(cur.id[0]) / 4)] + (5 + Math.floor((+cur.id.slice(1) - 1) / 4)) + ')' : '');
+    (BOARDS[cur.b].parent ? ' (в большой ' + L[BOARDS[cur.b].pcol + Math.floor(L.indexOf(cur.id[0]) / 4)] + (BOARDS[cur.b].prow + Math.floor((+cur.id.slice(1) - 1) / 4)) + ')' : '');
 
   if (editing) {
     var mopts = MARKS.map(function (m) { return '<option value="' + m[0] + '"' + (m[0] === (o.marker || "") ? " selected" : "") + '>' + m[1] + '</option>'; }).join("");
@@ -176,8 +180,8 @@ function renderPanel() {
   document.getElementById("p-edit").addEventListener("click", function () { editing = true; status = ""; renderPanel(); var t = document.getElementById("f-notes"); if (t) t.focus(); });
   var zb = document.getElementById("p-zoom");
   if (zb) zb.addEventListener("click", function () {
-    var zc = L.indexOf(cur.id[0]) - 3, zr = +cur.id.slice(1) - 5;
-    cur = {b: "core", id: L[zc * 4 + 1] + (zr * 4 + 2)}; editing = false; status = ""; renderAll(); syncHash();
+    var zb2 = ZOOM[k], ZB = BOARDS[zb2], zc = L.indexOf(cur.id[0]) - ZB.pcol, zr = +cur.id.slice(1) - ZB.prow;
+    cur = {b: zb2, id: L[zc * 4 + 1] + (zr * 4 + 2)}; editing = false; status = ""; renderAll(); syncHash();
   });
 }
 
@@ -223,20 +227,26 @@ function renderTools() {
 
 function renderAll() { renderBoard(); renderPanel(); renderTools(); }
 
-// Ссылка на клетку: #city-D5, #core-B4, #fw-E6
+// Ссылка на клетку: #city-D5, #core-B4, #fw-E6, #fwcore-F7
 function syncHash() { try { history.replaceState(null, "", "#" + cur.b + "-" + cur.id); } catch (_) {} }
 function readHash() {
-  var m = /^#(city|core|fw)-([A-I])([1-9])$/.exec(location.hash || "");
+  var m = /^#(city|core|fw|fwcore)-([A-I])([1-9])$/.exec(location.hash || "");
   if (!m) return;
   var B = BOARDS[m[1]], c = L.indexOf(m[2]), r = +m[3];
-  if (c < B.cols && r <= B.rows) cur = {b: m[1], id: m[2] + m[3]};
+  if (B && c < B.cols && r <= B.rows) cur = {b: m[1], id: m[2] + m[3]};
 }
 
 fetch(DATA_URL, {cache: "no-cache"}).then(function (r) {
   if (!r.ok) throw new Error(r.status);
   return r.json();
 }).then(function (d) {
-  data = d; loadMine(); readHash(); shell(); renderAll();
+  data = d;
+  // Доска без данных (например, ещё не заполненная) не показывается
+  Object.keys(BOARDS).forEach(function (b) {
+    if (!Object.keys(d.cells).some(function (k) { return k.indexOf(b + ":") === 0; })) delete BOARDS[b];
+  });
+  Object.keys(ZOOM).forEach(function (k) { if (!BOARDS[ZOOM[k]]) delete ZOOM[k]; });
+  loadMine(); readHash(); shell(); renderAll();
   window.addEventListener("hashchange", function () { readHash(); editing = false; renderAll(); });
 }).catch(function () {
   root.innerHTML = '<div class="wrap"><p class="loading">Не удалось загрузить данные карты. Если ты открыл файл прямо с диска, запусти локальный сервер (см. README) или открой сайт по ссылке GitHub Pages.</p></div>';
